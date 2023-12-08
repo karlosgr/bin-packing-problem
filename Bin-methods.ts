@@ -25,10 +25,13 @@ export class BinMethods {
   ): boolean {
     for (let i = position.anchor.x; i < position.length; i++) {
       for (let j = position.anchor.y; j < position.width; j++) {
-        if (!layer[i][j]) return false;
+        //this if left statement can be removed because the method that call this function ensure that the positions is valid,
+        //i left this statement if other method will use it in the future
+        if (layer.surface[i][j] === undefined || !layer.surface[i][j])
+          return false;
       }
     }
-    return position.height <= maxHeight;
+    return layer.heigth + position.height <= maxHeight;
   }
 
   public static createBoolMatrix(length: number, width: number, fill: boolean) {
@@ -37,16 +40,18 @@ export class BinMethods {
       .map((values) => new Array<boolean>(width).fill(fill));
   }
 
-  //check this method because his implementation is diferent from de original
+  //this method has been tested and works OK
   public static freeOrAllocSpace(
     layer: Layer,
     position: DimensionalPosition,
     options: FreeOrAlloc
   ): Layer {
     let newLayer: Layer = {
-      surface: new Array<Array<boolean>>(layer.surface.length)
-        .fill([])
-        .map((values) => new Array(layer.surface[0].length).fill(false)),
+      surface: this.createBoolMatrix(
+        layer.surface.length,
+        layer.surface[0].length,
+        false
+      ),
       heigth:
         options === "alloc"
           ? layer.heigth + position.height
@@ -55,8 +60,8 @@ export class BinMethods {
 
     for (let i = position.anchor.x; i < position.length; i++) {
       for (let j = position.anchor.y; j < position.width; j++) {
-        newLayer[i][j] = true;
-        layer[i][j] = false;
+        newLayer.surface[i][j] = true;
+        layer.surface[i][j] = false;
       }
     }
 
@@ -81,6 +86,7 @@ export class BinMethods {
     }
   }
 
+  //tested with and without rotation and works OK
   public static allPosiblePositions(
     object: ThreeDimensionalObject,
     layer: Layer,
@@ -89,8 +95,8 @@ export class BinMethods {
   ): Array<DimensionalPosition> {
     let allPositions: Array<DimensionalPosition> = [];
 
-    for (let i = 0; i < layer.surface.length - object.length; i++) {
-      for (let j = 0; j < layer.surface[0].length - object.width; j++) {
+    for (let i = 0; i <= layer.surface.length - object.length; i++) {
+      for (let j = 0; j <= layer.surface[0].length - object.width; j++) {
         let position: DimensionalPosition = {
           anchor: { x: i, y: j },
           length: object.length,

@@ -1,0 +1,5 @@
+# Ignore the compiled Javascript files
+*.js
+
+# Ignore the testing file
+testing.ts
